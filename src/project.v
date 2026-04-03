@@ -16,18 +16,34 @@ module tt_um_example (
     assign uio_oe  = 0;
 
     // Clock divider register — 25 bits wide
-    reg [24:0] counter;
+    reg [24:0] clk_div;
+    wire tick;
 
     // This runs on every rising clock edge
     always @(posedge clk) begin
         if (!rst_n)
-            counter <= 0;        // reset
+            clk_div <= 0;        // reset
         else
-            counter <= counter + 1; // count up
+            clk_div <= clk_div + 1; // count up
     end
 
-    // Send bit 24 (the slow one) to the LED
-    assign uo_out = {7'b0, counter[24]};
+    assign tick = (clk_div == 25'b1111111111111111111111111);
+
+    //9-bit down counter
+    reg [7:0] count;
+
+    always @(posedge clk) begin
+      if (!rst_n)
+          count <= 8'hFF;
+      else if (tick && count != 0)
+          count <= count - 1;
+    end
+
+    // Done signal - high when count reaches zero
+    wire done = (count == 0);
+
+    // Output - count on bits [6:0], done on bit [7]
+    assign uo_out = {done, count[6:0]};
 
     wire _unused = &{ena, ui_in, uio_in, 1'b0};
 
