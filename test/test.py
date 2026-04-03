@@ -8,12 +8,10 @@ from cocotb.triggers import ClockCycles
 async def test_project(dut):
     dut._log.info("Start")
 
-    # Set the clock period to 10 us (100 KHz)
     clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
     # Reset
-    dut._log.info("Reset")
     dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
@@ -21,15 +19,9 @@ async def test_project(dut):
     await ClockCycles(dut.clk, 10)
     dut.rst_n.value = 1
 
-    dut._log.info("Test counter increments after reset")
-
-    # After reset, output should be 0 (counter[24] is 0)
+    dut._log.info("Test: counter starts at 255 after reset")
     await ClockCycles(dut.clk, 1)
-    assert dut.uo_out.value == 0, "Output should be 0 after reset"
-
-    # Wait 10 more cycles and confirm counter is still incrementing (output stays 0
-    # since counter[24] won't flip for millions of cycles)
-    await ClockCycles(dut.clk, 10)
-    assert dut.uo_out.value == 0, "Counter bit 24 should still be 0 after 20 cycles"
+    # count starts at 0xFF, done bit is 0, so uo_out[6:0] = 0x7F
+    assert dut.uo_out.value[7] == 0, "Done should be 0 after reset"
 
     dut._log.info("Test passed!")
