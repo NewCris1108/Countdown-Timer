@@ -34,7 +34,7 @@ module tt_um_example (
 
     always @(posedge clk) begin
       if (!rst_n)
-          count <= 8'hFF;
+          count <= ui_in[7:1];
       else if (tick && count != 0)
           count <= count - 1;
     end
@@ -47,7 +47,7 @@ module tt_um_example (
     seg7_decoder decoder(.digit(count[3:0]), .segments(segments));
     assign uo_out = {done, segments};
 
-    wire _unused = &{ena, ui_in, uio_in, 1'b0};
+    wire _unused = &{ena, uio_in, 1'b0};
 
 endmodule
 module seg7_decoder (
