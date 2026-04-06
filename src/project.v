@@ -32,11 +32,32 @@ module tt_um_example (
     //9-bit down counter
     reg [7:0] count;
 
+    // State machine
+    localparam IDLE = 2'd0, RUN = 2'd1, DONE = 2'd2;
+    reg [1:0] state;
+
     always @(posedge clk) begin
-      if (!rst_n)
-          count <= {1'b0, ui_in[7:1]};
-      else if (tick && count != 0)
-          count <= count - 1;
+        if (!rst_n) begin
+            state <= IDLE;
+            count <= 0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    count <= {1'b0, ui_in[7:1]};
+                    if (ui_in[0])
+                        state <= RUN;
+                end
+                RUN: begin
+                    if (tick && count != 0)
+                        count <= count - 1;
+                    else if (count == 0)
+                        state <= DONE;
+                end
+                DONE: begin
+                    // hold here until reset
+                end
+            endcase
+        end
     end
 
     // Done signal - high when count reaches zero
