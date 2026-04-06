@@ -43,8 +43,30 @@ module tt_um_example (
     wire done = (count == 0);
 
     // Output - count on bits [6:0], done on bit [7]
-    assign uo_out = {done, count[6:0]};
+    wire [6:0] segments;
+    seg7_decoder decoder(.digit(count[3:0]), .segments(segments));
+    assign uo_out = {done, segments};
 
     wire _unused = &{ena, ui_in, uio_in, 1'b0};
 
+endmodule
+module seg7_decoder (
+    input  wire [3:0] digit,
+    output reg  [6:0] segments
+);
+    always @(*) begin
+        case (digit)
+            4'd0: segments = 7'b0111111; // 0
+            4'd1: segments = 7'b0000110; // 1
+            4'd2: segments = 7'b1011011; // 2
+            4'd3: segments = 7'b1001111; // 3
+            4'd4: segments = 7'b1100110; // 4
+            4'd5: segments = 7'b1101101; // 5
+            4'd6: segments = 7'b1111101; // 6
+            4'd7: segments = 7'b0000111; // 7
+            4'd8: segments = 7'b1111111; // 8
+            4'd9: segments = 7'b1101111; // 9
+            default: segments = 7'b0000000;
+        endcase
+    end
 endmodule
