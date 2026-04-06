@@ -34,7 +34,7 @@ module tt_um_example (
 
     always @(posedge clk) begin
       if (!rst_n)
-          count <= ui_in[7:1];
+          count <= {1'b0, ui_in[7:1]};
       else if (tick && count != 0)
           count <= count - 1;
     end
